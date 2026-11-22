@@ -1,0 +1,87 @@
+@* Rangka halaman: navbar di atas, kandungan di tengah, footer di bawah. Semua halaman guna ini. *@
+@{
+    var userName = Context.Session.GetString("UserName");
+    var role = Context.Session.GetString("Role");
+    var isAdmin = role == "Admin";
+    var isStaff = role == "Staff" || isAdmin; // Admin juga dikira staf
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Grand Hotel</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <nav class="navbar navbar-expand-lg navbar-dark hotel-nav d-print-none">
+        <div class="container">
+            <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">Grand Hotel</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menu">
+                <ul class="navbar-nav me-auto">
+                    @if (userName != null)
+                    {
+                        <li class="nav-item"><a class="nav-link" asp-controller="Rooms" asp-action="Index">Rooms</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Bookings" asp-action="Index">My Bookings</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="RoomService" asp-action="Index">My Room Service</a></li>
+                    }
+                    @if (isStaff)
+                    {
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Management</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" asp-controller="BookingManagement" asp-action="Index">Booking Management</a></li>
+                                <li><a class="dropdown-item" asp-controller="RoomService" asp-action="Manage">Room Service Requests</a></li>
+                                @if (isAdmin)
+                                {
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">Admin Panel (Reports &amp; Rooms)</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Users</a></li>
+                                }
+                            </ul>
+                        </li>
+                    }
+                </ul>
+                <ul class="navbar-nav">
+                    @if (userName != null)
+                    {
+                        <li class="nav-item"><span class="navbar-text me-3">Hi, @userName <span class="badge bg-light text-dark">@role</span></span></li>
+                        <li class="nav-item"><a class="btn btn-outline-light btn-sm" asp-controller="Users" asp-action="Logout">Logout</a></li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link" asp-controller="Users" asp-action="Login">Login</a></li>
+                        <li class="nav-item"><a class="btn btn-warning btn-sm ms-2" asp-controller="Users" asp-action="Register">Register</a></li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-4 flex-grow-1">
+        @* Mesej berjaya / gagal (dihantar dari controller guna TempData) *@
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success d-print-none">@TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger d-print-none">@TempData["Error"]</div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <footer class="text-center text-muted py-3 border-top d-print-none">
+        &copy; @DateTime.Now.Year Grand Hotel Booking System
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

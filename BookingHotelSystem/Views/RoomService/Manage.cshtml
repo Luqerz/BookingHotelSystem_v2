@@ -1,0 +1,77 @@
+@* Staf/Admin: pantau semua permintaan servis bilik dan kemas kini status *@
+@model List<RoomServiceRequest>
+@{
+    ViewData["Title"] = "Room Service Requests";
+    var returnUrl = Context.Request.Path.Value + Context.Request.QueryString.Value;
+    string? selectedStatus = ViewBag.Status;
+    string? selectedType = ViewBag.Type;
+}
+
+<h2 class="mb-3">Room Service Requests</h2>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select name="status" class="form-select">
+            <option value="">All statuses</option>
+            @foreach (var s in RoomServiceStatus.All)
+            {
+                <option value="@s" selected="@(selectedStatus == s)">@s</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="type" class="form-select">
+            <option value="">All service types</option>
+            @foreach (var t in ServiceTypes.All)
+            {
+                <option value="@t" selected="@(selectedType == t)">@t</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-primary">Filter</button>
+        <a class="btn btn-outline-secondary" asp-action="Manage">Reset</a>
+    </div>
+</form>
+
+<p class="text-muted">Showing @Model.Count request(s)</p>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr><th>#</th><th>Room</th><th>Guest</th><th>Service</th><th>Details</th><th>Requested</th><th>Status</th><th>Update</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Id</td>
+                <td class="fw-bold">@r.Booking?.Room?.RoomNumber</td>
+                <td>@r.User?.Name</td>
+                <td>@r.ServiceType</td>
+                <td>@r.Details</td>
+                <td>@r.RequestedAt.ToString("dd MMM, hh:mm tt")</td>
+                <td><partial name="_StatusBadge" model="r.Status" /></td>
+                <td>
+                    <form asp-action="UpdateStatus" asp-route-id="@r.Id" method="post" class="d-flex gap-2">
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        <select name="status" class="form-select form-select-sm w-auto">
+                            @foreach (var s in RoomServiceStatus.All)
+                            {
+                                <option value="@s" selected="@(r.Status == s)">@s</option>
+                            }
+                        </select>
+                        <button class="btn btn-sm btn-outline-primary">Save</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="8" class="text-center text-muted py-4">No requests found.</td></tr>
+        }
+        </tbody>
+    </table>
+    </div>
+</div>

@@ -1,0 +1,248 @@
+@* ADMIN PANEL: Tab "Reports" (jana laporan) dan Tab "Rooms" (urus bilik) *@
+@model AdminPanelViewModel
+@{
+    ViewData["Title"] = "Admin Panel";
+    bool reportTab = Model.ActiveTab == "report";
+    var monthNames = System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.MonthNames; // 12 nama bulan
+    var report = Model.Report;
+}
+
+<h2 class="mb-3 d-print-none">Admin Panel</h2>
+
+<ul class="nav nav-tabs mb-3 d-print-none">
+    <li class="nav-item">
+        <button class="nav-link @(reportTab ? "active" : "")" data-bs-toggle="tab" data-bs-target="#tab-report" type="button">📊 Reports</button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link @(!reportTab ? "active" : "")" data-bs-toggle="tab" data-bs-target="#tab-rooms" type="button">🛏️ Manage Rooms</button>
+    </li>
+</ul>
+
+<div class="tab-content">
+
+    @* ================= TAB 1: REPORTS ================= *@
+    <div class="tab-pane fade @(reportTab ? "show active" : "")" id="tab-report">
+
+        <form method="get" asp-action="Index" class="card card-body shadow-sm mb-4 d-print-none">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label">Report type</label>
+                    <select name="type" id="reportType" class="form-select" onchange="updateReportFields()">
+                        <option value="weekly" selected="@(Model.Type == "weekly")">Weekly</option>
+                        <option value="monthly" selected="@(Model.Type == "monthly")">Monthly</option>
+                        <option value="range" selected="@(Model.Type == "range")">Month range (e.g. Jan - Jun)</option>
+                        <option value="custom" selected="@(Model.Type == "custom")">Custom dates</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Based on</label>
+                    <select name="basis" class="form-select">
+                        <option value="created" selected="@(Model.Basis == "created")">Booking date (when booked)</option>
+                        <option value="checkin" selected="@(Model.Basis == "checkin")">Check-in date</option>
+                    </select>
+                </div>
+
+                @* Mingguan: pilih satu tarikh, laporan meliputi Isnin - Ahad minggu tu *@
+                <div class="col-md-3 rf rf-weekly">
+                    <label class="form-label">Any date in the week</label>
+                    <input type="date" name="date" value="@Model.Date.ToString("yyyy-MM-dd")" class="form-control" />
+                </div>
+
+                @* Bulanan *@
+                <div class="col-md-2 rf rf-monthly">
+                    <label class="form-label">Month</label>
+                    <select name="month" class="form-select">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(Model.Month == m)">@monthNames[m - 1]</option>
+                        }
+                    </select>
+                </div>
+
+                @* Julat bulan *@
+                <div class="col-md-2 rf rf-range">
+                    <label class="form-label">From month</label>
+                    <select name="fromMonth" class="form-select">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(Model.FromMonth == m)">@monthNames[m - 1]</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 rf rf-range">
+                    <label class="form-label">To month</label>
+                    <select name="toMonth" class="form-select">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(Model.ToMonth == m)">@monthNames[m - 1]</option>
+                        }
+                    </select>
+                </div>
+
+                @* Tahun (untuk bulanan dan julat bulan) *@
+                <div class="col-md-2 rf rf-monthly rf-range">
+                    <label class="form-label">Year</label>
+                    <input type="number" name="year" value="@Model.Year" min="2000" max="2100" class="form-control" />
+                </div>
+
+                @* Tarikh tersuai *@
+                <div class="col-md-3 rf rf-custom">
+                    <label class="form-label">From date</label>
+                    <input type="date" name="fromDate" value="@Model.FromDate.ToString("yyyy-MM-dd")" class="form-control" />
+                </div>
+                <div class="col-md-3 rf rf-custom">
+                    <label class="form-label">To date</label>
+                    <input type="date" name="toDate" value="@Model.ToDate.ToString("yyyy-MM-dd")" class="form-control" />
+                </div>
+
+                <div class="col-auto">
+                    <button class="btn btn-primary">Generate Report</button>
+                </div>
+            </div>
+        </form>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-danger">@Model.Error</div>
+        }
+
+        @if (report != null)
+        {
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h3 class="mb-0">@report.Title</h3>
+                    <div class="text-muted">Filtered by: @report.BasisLabel &middot; Generated @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt")</div>
+                </div>
+                <button class="btn btn-outline-primary d-print-none" onclick="window.print()">🖨️ Print</button>
+            </div>
+
+            <div class="row g-3 mb-4 text-center">
+                <div class="col-6 col-md-3"><div class="card shadow-sm"><div class="card-body">
+                    <div class="display-6 fw-bold">@report.TotalBookings</div><div class="text-muted">Total bookings</div>
+                </div></div></div>
+                <div class="col-6 col-md-3"><div class="card shadow-sm"><div class="card-body">
+                    <div class="display-6 fw-bold text-success">@report.ActiveBookings</div><div class="text-muted">Active (not cancelled)</div>
+                </div></div></div>
+                <div class="col-6 col-md-3"><div class="card shadow-sm"><div class="card-body">
+                    <div class="display-6 fw-bold text-danger">@report.CancelledBookings</div><div class="text-muted">Cancelled</div>
+                </div></div></div>
+                <div class="col-6 col-md-3"><div class="card shadow-sm"><div class="card-body">
+                    <div class="display-6 fw-bold">RM @report.Revenue.ToString("N2")</div><div class="text-muted">Revenue (paid)</div>
+                </div></div></div>
+            </div>
+
+            <div class="mb-4">
+                <strong>By status:</strong>
+                @foreach (var s in report.StatusCounts)
+                {
+                    <span class="me-3"><partial name="_StatusBadge" model="s.Key" /> @s.Value</span>
+                }
+            </div>
+
+            <h5>Summary by @report.GroupLabel.ToLower()</h5>
+            <div class="card shadow-sm mb-4">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr><th>@report.GroupLabel</th><th class="text-end">Bookings</th><th class="text-end">Cancelled</th><th class="text-end">Revenue</th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var row in report.Rows)
+                    {
+                        <tr>
+                            <td>@row.Label</td>
+                            <td class="text-end">@row.Bookings</td>
+                            <td class="text-end">@row.Cancelled</td>
+                            <td class="text-end">RM @row.Revenue.ToString("N2")</td>
+                        </tr>
+                    }
+                    @if (!report.Rows.Any())
+                    {
+                        <tr><td colspan="4" class="text-center text-muted py-3">No bookings in this period.</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+
+            <h5>Booking details</h5>
+            <div class="card shadow-sm">
+                <div class="table-responsive">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr><th>#</th><th>Booked on</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Total</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var b in report.Bookings)
+                    {
+                        <tr>
+                            <td>@b.Id</td>
+                            <td>@b.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td>@b.User?.Name</td>
+                            <td>@b.Room?.RoomNumber</td>
+                            <td>@b.CheckInDate.ToString("dd MMM yyyy")</td>
+                            <td>@b.CheckOutDate.ToString("dd MMM yyyy")</td>
+                            <td>RM @b.TotalPrice.ToString("N2")</td>
+                            <td><partial name="_StatusBadge" model="b.Status" /></td>
+                        </tr>
+                    }
+                    @if (!report.Bookings.Any())
+                    {
+                        <tr><td colspan="8" class="text-center text-muted py-3">No bookings in this period.</td></tr>
+                    }
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        }
+        else if (Model.Error == null)
+        {
+            <div class="text-center text-muted py-5 d-print-none">Choose a report type above and click <strong>Generate Report</strong>.</div>
+        }
+    </div>
+
+    @* ================= TAB 2: MANAGE ROOMS ================= *@
+    <div class="tab-pane fade @(!reportTab ? "show active" : "") d-print-none" id="tab-rooms">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Rooms (@Model.Rooms.Count)</h4>
+            <a class="btn btn-success" asp-action="CreateRoom">+ Add Room</a>
+        </div>
+
+        <div class="card shadow-sm">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr><th>Room No.</th><th>Type</th><th>Price / night</th><th>Status</th><th class="text-end">Action</th></tr>
+                </thead>
+                <tbody>
+                @foreach (var room in Model.Rooms)
+                {
+                    <tr>
+                        <td class="fw-bold">@room.RoomNumber</td>
+                        <td>@room.RoomType</td>
+                        <td>RM @room.Price.ToString("N2")</td>
+                        <td>
+                            @if (room.IsAvailable) { <span class="badge bg-success">Available</span> }
+                            else { <span class="badge bg-secondary">Unavailable</span> }
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="EditRoom" asp-route-id="@room.Id">Edit</a>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Tunjuk hanya ruangan input yang sesuai dengan jenis laporan yang dipilih
+        function updateReportFields() {
+            var type = document.getElementById('reportType').value;
+            document.querySelectorAll('.rf').forEach(function (el) {
+                el.classList.toggle('d-none', !el.classList.contains('rf-' + type));
+            });
+        }
+        updateReportFields();
+    </script>
+}

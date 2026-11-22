@@ -1,0 +1,43 @@
+@* Senarai semua user (Admin sahaja). Admin boleh tukar role: User / Staff / Admin. *@
+@model IEnumerable<User>
+@{
+    ViewData["Title"] = "Users";
+    var myId = Context.Session.GetInt32("UserId");
+}
+
+<h2 class="mb-3">Registered Users</h2>
+
+<div class="card shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr><th>#</th><th>Name</th><th>Email</th><th>Role</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var u in Model)
+        {
+            <tr>
+                <td>@u.Id</td>
+                <td>@u.Name</td>
+                <td>@u.Email</td>
+                <td>
+                    @if (u.Id == myId)
+                    {
+                        <span class="badge bg-danger">@u.Role (you)</span>
+                    }
+                    else
+                    {
+                        <form asp-action="ChangeRole" asp-route-id="@u.Id" method="post" class="d-flex gap-2">
+                            <select name="role" class="form-select form-select-sm w-auto">
+                                <option value="User" selected="@(u.Role == "User")">User</option>
+                                <option value="Staff" selected="@(u.Role == "Staff")">Staff</option>
+                                <option value="Admin" selected="@(u.Role == "Admin")">Admin</option>
+                            </select>
+                            <button class="btn btn-sm btn-outline-primary">Save</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

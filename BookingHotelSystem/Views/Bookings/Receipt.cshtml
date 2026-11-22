@@ -1,0 +1,31 @@
+@model Booking
+@{
+    ViewData["Title"] = "Receipt";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm"><div class="card-body p-4">
+            <div class="text-center mb-3">
+                <h3 class="mb-0">Grand Hotel</h3>
+                <div class="text-muted">Booking Receipt</div>
+            </div>
+
+            <table class="table">
+                <tr><th>Receipt No.</th><td>#@Model.Id.ToString("D5")</td></tr>
+                <tr><th>Guest</th><td>@Model.User?.Name (@Model.User?.Email)</td></tr>
+                <tr><th>Room</th><td>@Model.Room?.RoomNumber (@Model.Room?.RoomType)</td></tr>
+                <tr><th>Check-in</th><td>@Model.CheckInDate.ToString("dd MMM yyyy")</td></tr>
+                <tr><th>Check-out</th><td>@Model.CheckOutDate.ToString("dd MMM yyyy")</td></tr>
+                <tr><th>Nights</th><td>@Model.Nights</td></tr>
+                <tr><th>Status</th><td><partial name="_StatusBadge" model="Model.Status" /></td></tr>
+                <tr class="table-light"><th>Total Paid</th><td class="fw-bold fs-5">RM @Model.TotalPrice.ToString("N2")</td></tr>
+            </table>
+
+            <div class="d-print-none">
+                <button class="btn btn-primary" onclick="window.print()">Print</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Back to Bookings</a>
+            </div>
+        </div></div>
+    </div>
+</div>

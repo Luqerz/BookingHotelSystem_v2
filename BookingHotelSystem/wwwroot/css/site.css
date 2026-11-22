@@ -1,0 +1,13 @@
+/* Gaya tambahan sahaja. Selebihnya guna Bootstrap. */
+.hotel-nav {
+    background: linear-gradient(90deg, #1f2a44, #34436b);
+}
+
+.hero {
+    background: linear-gradient(135deg, #1f2a44, #3b5998);
+}
+
+.card {
+    border: 0;
+    border-radius: 12px;
+}

@@ -1,0 +1,36 @@
+@* Halaman utama *@
+@{
+    ViewData["Title"] = "Home";
+    var loggedIn = Context.Session.GetInt32("UserId") != null;
+}
+
+<div class="hero text-center text-white rounded-4 p-5 mb-4">
+    <h1 class="display-5 fw-bold">Welcome to Grand Hotel</h1>
+    <p class="lead">Find a comfortable room and book it in a few clicks.</p>
+
+    @if (loggedIn)
+    {
+        <a class="btn btn-warning btn-lg" asp-controller="Rooms" asp-action="Index">Browse Rooms</a>
+        <a class="btn btn-outline-light btn-lg" asp-controller="Bookings" asp-action="Index">My Bookings</a>
+    }
+    else
+    {
+        <a class="btn btn-warning btn-lg" asp-controller="Users" asp-action="Login">Login</a>
+        <a class="btn btn-outline-light btn-lg" asp-controller="Users" asp-action="Register">Create Account</a>
+    }
+</div>
+
+<div class="row text-center g-3">
+    <div class="col-md-6">
+        <div class="card shadow-sm"><div class="card-body">
+            <div class="display-6 fw-bold">@ViewBag.RoomCount</div>
+            <div class="text-muted">Rooms available</div>
+        </div></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm"><div class="card-body">
+            <div class="display-6 fw-bold">@ViewBag.BookingCount</div>
+            <div class="text-muted">Active bookings</div>
+        </div></div>
+    </div>
+</div>

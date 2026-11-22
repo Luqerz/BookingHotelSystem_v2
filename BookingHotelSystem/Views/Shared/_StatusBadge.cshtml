@@ -1,0 +1,15 @@
+@* Label status berwarna. Guna: <partial name="_StatusBadge" model="b.Status" /> *@
+@model string
+@{
+    var css = Model switch
+    {
+        "Paid" => "bg-success",
+        "Completed" => "bg-success",
+        "Pending" => "bg-warning text-dark",
+        "In Progress" => "bg-info text-dark",
+        "Checked-In" => "bg-primary",
+        "Checked-Out" => "bg-dark",
+        _ => "bg-secondary" // Cancelled
+    };
+}
+<span class="badge @css">@Model</span>

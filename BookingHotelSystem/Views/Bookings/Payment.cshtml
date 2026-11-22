@@ -1,0 +1,26 @@
+@model Booking
+@{
+    ViewData["Title"] = "Payment";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm"><div class="card-body p-4">
+            <h3 class="mb-3">Payment</h3>
+
+            <table class="table">
+                <tr><th>Room</th><td>@Model.Room?.RoomNumber (@Model.Room?.RoomType)</td></tr>
+                <tr><th>Check-in</th><td>@Model.CheckInDate.ToString("dd MMM yyyy")</td></tr>
+                <tr><th>Check-out</th><td>@Model.CheckOutDate.ToString("dd MMM yyyy")</td></tr>
+                <tr><th>Nights</th><td>@Model.Nights x RM @Model.Room?.Price.ToString("N2")</td></tr>
+                <tr class="table-light"><th>Total</th><td class="fw-bold fs-5">RM @Model.TotalPrice.ToString("N2")</td></tr>
+            </table>
+
+            <form asp-action="ProcessPayment" asp-route-id="@Model.Id" method="post">
+                <button class="btn btn-success">Pay Now</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Pay Later</a>
+            </form>
+            <p class="text-muted small mt-3 mb-0">This is a demo payment. No real money is charged.</p>
+        </div></div>
+    </div>
+</div>

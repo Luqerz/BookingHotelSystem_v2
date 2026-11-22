@@ -1,0 +1,46 @@
+@* Borang tempah bilik. Data bilik dan tarikh dihantar dari controller guna ViewBag. *@
+@{
+    ViewData["Title"] = "New Booking";
+    var rooms = (List<Room>)ViewBag.Rooms;
+    int? selectedRoomId = ViewBag.RoomId;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm"><div class="card-body p-4">
+            <h3 class="mb-3">Book a Room</h3>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+
+            <form asp-action="Create" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Room</label>
+                    <select name="roomId" class="form-select" required>
+                        <option value="">-- Select a room --</option>
+                        @foreach (var r in rooms)
+                        {
+                            <option value="@r.Id" selected="@(r.Id == selectedRoomId)">
+                                @r.RoomNumber - @r.RoomType (RM @r.Price.ToString("N2") / night)
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="form-label">Check-in</label>
+                        <input type="date" name="checkIn" class="form-control" value="@ViewBag.CheckIn" min="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label">Check-out</label>
+                        <input type="date" name="checkOut" class="form-control" value="@ViewBag.CheckOut" min="@DateTime.Today.AddDays(1).ToString("yyyy-MM-dd")" required />
+                    </div>
+                </div>
+                <button class="btn btn-primary">Continue to Payment</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+            </form>
+        </div></div>
+    </div>
+</div>

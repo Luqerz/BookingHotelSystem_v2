@@ -1,0 +1,62 @@
+@* Borang permintaan servis bilik. Hanya tetamu yang sudah Check-In boleh guna. *@
+@{
+    ViewData["Title"] = "New Room Service Request";
+    var bookings = (List<Booking>)ViewBag.Bookings;
+    int? selectedBooking = ViewBag.BookingId;
+    string? selectedType = ViewBag.ServiceType;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm"><div class="card-body p-4">
+            <h3 class="mb-3">Request Room Service</h3>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger">@ViewBag.Error</div>
+            }
+
+            @if (!bookings.Any())
+            {
+                <div class="alert alert-info mb-3">
+                    Room service is available once you have checked in. Please check in at the front desk first.
+                </div>
+                <a class="btn btn-outline-secondary" asp-action="Index">Back</a>
+            }
+            else
+            {
+                <form asp-action="Create" method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Your Room</label>
+                        <select name="bookingId" class="form-select" required>
+                            @foreach (var b in bookings)
+                            {
+                                <option value="@b.Id" selected="@(b.Id == selectedBooking)">
+                                    Room @b.Room?.RoomNumber (check-out @b.CheckOutDate.ToString("dd MMM yyyy"))
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Service Type</label>
+                        <select name="serviceType" class="form-select" required>
+                            <option value="">-- Select a service --</option>
+                            @foreach (var t in ServiceTypes.All)
+                            {
+                                <option value="@t" selected="@(selectedType == t)">@t</option>
+                            }
+                        </select>
+                        <div class="form-text">Housekeeping: cleaning, linen change. Food &amp; Beverage: meals, drinks. Extra Amenities: towels, pillows, toiletries, etc.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Details</label>
+                        <textarea name="details" class="form-control" rows="3" maxlength="300" required
+                                  placeholder="e.g. 2 extra towels, or 1 chicken rice and 1 iced tea">@ViewBag.Details</textarea>
+                    </div>
+                    <button class="btn btn-primary">Send Request</button>
+                    <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+                </form>
+            }
+        </div></div>
+    </div>
+</div>

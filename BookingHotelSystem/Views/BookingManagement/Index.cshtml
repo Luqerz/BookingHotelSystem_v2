@@ -1,0 +1,105 @@
+@* MODUL BOOKING MANAGEMENT (Staf/Admin): senarai semua tempahan, tapisan, check-in/check-out/batal *@
+@model List<Booking>
+@{
+    ViewData["Title"] = "Booking Management";
+    // Alamat halaman semasa (termasuk tapisan) supaya lepas klik butang kita balik ke tapisan yang sama
+    var returnUrl = Context.Request.Path.Value + Context.Request.QueryString.Value;
+    string? selectedStatus = ViewBag.Status;
+}
+
+<h2 class="mb-3">Booking Management</h2>
+
+<form method="get" class="card card-body shadow-sm mb-3">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label">Search</label>
+            <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Guest name, email or room no." />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Status</label>
+            <select name="status" class="form-select">
+                <option value="">All</option>
+                @foreach (var s in BookingStatus.All)
+                {
+                    <option value="@s" selected="@(selectedStatus == s)">@s</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Staying on (specific day)</label>
+            <input type="date" name="day" value="@ViewBag.Day" class="form-control" />
+        </div>
+        <div class="col-md-3"></div>
+
+        <div class="col-md-3">
+            <label class="form-label">Check-in from</label>
+            <input type="date" name="fromDate" value="@ViewBag.FromDate" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Check-in to</label>
+            <input type="date" name="toDate" value="@ViewBag.ToDate" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <button class="btn btn-primary">Filter</button>
+            <a class="btn btn-outline-secondary" asp-action="Index">Reset</a>
+            <a class="btn btn-outline-info" asp-action="Index" asp-route-day="@DateTime.Today.ToString("yyyy-MM-dd")">Today</a>
+            <a class="btn btn-outline-info" asp-action="Index" asp-route-fromDate="@DateTime.Today.ToString("yyyy-MM-dd")" asp-route-toDate="@DateTime.Today.ToString("yyyy-MM-dd")">Today's Arrivals</a>
+        </div>
+    </div>
+</form>
+
+<p class="text-muted">Showing @Model.Count booking(s)</p>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>#</th><th>Guest</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Total</th><th>Status</th><th class="text-end">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var b in Model)
+        {
+            <tr>
+                <td>@b.Id</td>
+                <td>@b.User?.Name<br /><small class="text-muted">@b.User?.Email</small></td>
+                <td>@b.Room?.RoomNumber (@b.Room?.RoomType)</td>
+                <td>@b.CheckInDate.ToString("dd MMM yyyy")</td>
+                <td>@b.CheckOutDate.ToString("dd MMM yyyy")</td>
+                <td>RM @b.TotalPrice.ToString("N2")</td>
+                <td><partial name="_StatusBadge" model="b.Status" /></td>
+                <td class="text-end text-nowrap">
+                    @if (b.Status == BookingStatus.Paid)
+                    {
+                        <form asp-action="CheckIn" asp-route-id="@b.Id" method="post" class="d-inline">
+                            <input type="hidden" name="returnUrl" value="@returnUrl" />
+                            <button class="btn btn-sm btn-primary">Check-In</button>
+                        </form>
+                    }
+                    @if (b.Status == BookingStatus.CheckedIn)
+                    {
+                        <form asp-action="CheckOut" asp-route-id="@b.Id" method="post" class="d-inline">
+                            <input type="hidden" name="returnUrl" value="@returnUrl" />
+                            <button class="btn btn-sm btn-dark">Check-Out</button>
+                        </form>
+                    }
+                    @if (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Paid)
+                    {
+                        <form asp-action="Cancel" asp-route-id="@b.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Cancel booking #@b.Id?');">
+                            <input type="hidden" name="returnUrl" value="@returnUrl" />
+                            <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="8" class="text-center text-muted py-4">No bookings match your filter.</td></tr>
+        }
+        </tbody>
+    </table>
+    </div>
+</div>

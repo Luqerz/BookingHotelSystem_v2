@@ -1,0 +1,17 @@
+@model Room
+@{
+    ViewData["Title"] = "Add Room";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm"><div class="card-body p-4">
+            <h3 class="mb-3">Add Room</h3>
+            <form asp-action="CreateRoom" method="post">
+                <partial name="_RoomFields" model="Model" />
+                <button class="btn btn-success">Save</button>
+                <a class="btn btn-outline-secondary" asp-action="Index" asp-route-tab="rooms">Cancel</a>
+            </form>
+        </div></div>
+    </div>
+</div>

@@ -1,0 +1,61 @@
+@* Senarai tempahan saya *@
+@model IEnumerable<Booking>
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">My Bookings</h2>
+    <a class="btn btn-primary" asp-action="Create">+ New Booking</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>#</th><th>Room</th><th>Check-in</th><th>Check-out</th><th>Nights</th><th>Total</th><th>Status</th><th class="text-end">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var b in Model)
+        {
+            <tr>
+                <td>@b.Id</td>
+                <td>@b.Room?.RoomNumber (@b.Room?.RoomType)</td>
+                <td>@b.CheckInDate.ToString("dd MMM yyyy")</td>
+                <td>@b.CheckOutDate.ToString("dd MMM yyyy")</td>
+                <td>@b.Nights</td>
+                <td>RM @b.TotalPrice.ToString("N2")</td>
+                <td><partial name="_StatusBadge" model="b.Status" /></td>
+                <td class="text-end">
+                    @if (b.Status == BookingStatus.Pending)
+                    {
+                        <a class="btn btn-sm btn-success" asp-action="Payment" asp-route-id="@b.Id">Pay</a>
+                    }
+                    @if (b.Status == BookingStatus.Paid || b.Status == BookingStatus.CheckedIn || b.Status == BookingStatus.CheckedOut)
+                    {
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Receipt" asp-route-id="@b.Id">Receipt</a>
+                    }
+                    @if (b.Status == BookingStatus.CheckedIn)
+                    {
+                        <a class="btn btn-sm btn-info" asp-controller="RoomService" asp-action="Create">Room Service</a>
+                    }
+                    @if (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Paid)
+                    {
+                        <form asp-action="Cancel" asp-route-id="@b.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Cancel this booking?');">
+                            <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="8" class="text-center text-muted py-4">No bookings yet.</td></tr>
+        }
+        </tbody>
+    </table>
+    </div>
+</div>

@@ -1,0 +1,46 @@
+@* Permintaan servis bilik saya (pelanggan) *@
+@model IEnumerable<RoomServiceRequest>
+@{
+    ViewData["Title"] = "My Room Service";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">My Room Service Requests</h2>
+    <a class="btn btn-primary" asp-action="Create">+ New Request</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+            <tr><th>#</th><th>Room</th><th>Service</th><th>Details</th><th>Requested</th><th>Status</th><th class="text-end">Action</th></tr>
+        </thead>
+        <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Id</td>
+                <td>@r.Booking?.Room?.RoomNumber</td>
+                <td>@r.ServiceType</td>
+                <td>@r.Details</td>
+                <td>@r.RequestedAt.ToString("dd MMM yyyy, hh:mm tt")</td>
+                <td><partial name="_StatusBadge" model="r.Status" /></td>
+                <td class="text-end">
+                    @if (r.Status == RoomServiceStatus.Pending)
+                    {
+                        <form asp-action="Cancel" asp-route-id="@r.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('Cancel this request?');">
+                            <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="7" class="text-center text-muted py-4">You have no requests yet.</td></tr>
+        }
+        </tbody>
+    </table>
+    </div>
+</div>
